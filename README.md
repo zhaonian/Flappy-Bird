@@ -1,3 +1,3 @@
 # Flappy Bird Clone
 
-A native Android clone of flappy bird game. Used libGDX gaming framework.
+A native Android clone of the flappy bird game. Used libGDX gaming framework.
