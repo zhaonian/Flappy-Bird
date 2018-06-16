@@ -17,8 +17,9 @@ public class FlappyBird extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture background;
     ShapeRenderer shapeRenderer;
-
 	Texture[] birds;
+	Texture gameover;
+
 	int score = 0;
 	int scoringTube = 0;
 	BitmapFont font;
@@ -51,7 +52,7 @@ public class FlappyBird extends ApplicationAdapter {
 		birds = new Texture[] {
 			new Texture("bird.png"), new Texture("bird2.png")
 		};
-		birdY = Gdx.graphics.getHeight() / 2 - birds[flapState].getHeight() / 2;
+		gameover = new Texture("gameover.png");
         topTube = new Texture("toptube.png");
         bottomTube = new Texture("bottomtube.png");
         random = new Random();
@@ -60,6 +61,16 @@ public class FlappyBird extends ApplicationAdapter {
         birdCircle = new Circle();
         topTubeRectangles = new Rectangle[numberTubes];
         bottomTubeRectangles = new Rectangle[numberTubes];
+
+        startGame();
+
+        font = new BitmapFont();
+        font.setColor(Color.WHITE);
+        font.getData().setScale(10);
+	}
+
+	public void startGame() {
+        birdY = Gdx.graphics.getHeight() / 2 - birds[flapState].getHeight() / 2;
         for (int i = 0; i < numberTubes; i++) {
             tubeOffset[i] = (random.nextFloat() - 0.5f) * (Gdx.graphics.getHeight() - gap);
             tubeX[i] = Gdx.graphics.getWidth() / 2 - topTube.getWidth() / 2 + Gdx.graphics.getWidth() + i * distanceBetweenTubes;
@@ -67,11 +78,7 @@ public class FlappyBird extends ApplicationAdapter {
             topTubeRectangles[i] = new Rectangle();
             bottomTubeRectangles[i] = new Rectangle();
         }
-        font = new BitmapFont();
-        font.setColor(Color.WHITE);
-        font.getData().setScale(10);
-
-	}
+    }
 
 	@Override
 	public void render () {
@@ -118,15 +125,29 @@ public class FlappyBird extends ApplicationAdapter {
 
             }
 
-			if (birdY > 0 || velocity < 0) {
+			if (birdY > 0) {
 				velocity += gravity;
 				birdY -= velocity;
-			}
-		} else {
+			} else {
+                gameState = 2;
+            }
+		} else if (gameState == 0) {
 			if (Gdx.input.justTouched()) {
 				gameState = 1;
 			}
-		}
+		} else { // gameState == 2, user died.
+            batch.draw(gameover,
+                    Gdx.graphics.getWidth() / 2 - gameover.getWidth() / 2,
+                    Gdx.graphics.getHeight() / 2 - gameover.getHeight() / 2);
+
+            if (Gdx.input.justTouched()) {
+                gameState = 1;
+                startGame();
+                score = 0;
+                scoringTube = 0;
+                velocity = 0;
+            }
+        }
 
 		flapState ^= 1;
 
@@ -157,7 +178,8 @@ public class FlappyBird extends ApplicationAdapter {
 //                    bottomTube.getHeight());
 
             if (Intersector.overlaps(birdCircle, topTubeRectangles[i]) || Intersector.overlaps(birdCircle, bottomTubeRectangles[i])) {
-                Gdx.app.log("hit the wall", "hehe");
+//                Gdx.app.log("hit the wall", "hehe");
+                gameState = 2;
             }
         }
 //        shapeRenderer.end();
